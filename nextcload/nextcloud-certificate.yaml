@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: traefik-ingress-route-cert
+  namespace: nextcloud
+spec:
+  secretName: nextcloud-certificate-secret
+  issuerRef:
+    name: cloudflare-cluster-issuer
+    kind: ClusterIssuer
+  dnsNames:
+    - nextcloud.tomcat.com.pl
