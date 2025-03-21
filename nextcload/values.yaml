@@ -76,7 +76,7 @@ phpClientHttpsFix:
   protocol: https
 
 nextcloud:
-  host: nextcloud.tomcat.com.pl
+  host: nextcloud.tomcat.org.pl
   username: admin
   password: fx#7SvC#ds78bn&aw3
   ## Use an existing secret
@@ -96,7 +96,7 @@ nextcloud:
   persistence:
     subPath:
   # if set, we'll template this list to the NEXTCLOUD_TRUSTED_DOMAINS env var
-  trustedDomains: ["nextcloud.tomcat.com.pl"]
+  trustedDomains: ["nextcloud.tomcat.org.pl"]
   ## SMTP configuration
   mail:
     enabled: false
