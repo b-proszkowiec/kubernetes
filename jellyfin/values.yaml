@@ -45,12 +45,12 @@ podSecurityContext:
 # -- Security context for the container.
 securityContext:
   {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+# capabilities:
+#   drop:
+#   - ALL
+# readOnlyRootFilesystem: true
+# runAsNonRoot: true
+# runAsUser: 1000
 
 # -- Define a custom runtimeClassName for the pod.
 runtimeClassName: ""
@@ -113,9 +113,9 @@ ingress:
 
 # -- Resource requests and limits for the Jellyfin container.
 resources:
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
+  limits:
+    cpu: 2
+    memory: 4Gi
   requests:
     cpu: 100m
     memory: 128Mi
@@ -146,7 +146,6 @@ volumes:
     nfs:
       server: "192.168.0.200"
       path: "/Data/Wideo"
-      readOnly: true
 
 # -- Additional volume mounts for the Jellyfin container.
 volumeMounts:
@@ -171,16 +170,6 @@ jellyfin:
   args: []
   # -- Additional environment variables for the container.
   env: []
-
-  # extraVolumes:
-  #   - name: nfs
-  #     nfs:
-  #       server: "192.168.0.200"
-  #       path: "/Data/Wideo"
-  #       readOnly: true
-  # extraVolumeMounts:
-  #   - name: nfs
-  #     mountPath: "/data/raid4tb"
 
 persistence:
   config:
