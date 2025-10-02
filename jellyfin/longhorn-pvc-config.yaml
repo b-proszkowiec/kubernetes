@@ -4,7 +4,7 @@ metadata:
   name: jellyfin-pvc-config
   namespace: jellyfin
 spec:
-  storageClassName: nfs-jellyfin-csi
+  storageClassName: longhorn
   accessModes: [ReadWriteOnce]
   resources:
     requests:
