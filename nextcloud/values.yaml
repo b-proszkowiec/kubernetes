@@ -1,4 +1,3 @@
-## Official nextcloud image version
 ## ref: https://hub.docker.com/r/library/nextcloud/tags/
 ##
 image:
@@ -261,6 +260,8 @@ nextcloud:
   ##
   ## Extra environment variables
   extraEnv:
+    - name: TZ
+      value: "Europe/Warsaw"
   #  - name: SOME_SECRET_ENV
   #    valueFrom:
   #      secretKeyRef:
@@ -356,6 +357,14 @@ nginx:
       "X-Robots-Tag": "noindex, nofollow"
       "X-XSS-Protection": "1; mode=block"
 
+    # Added in server block of default config.
+    serverBlockCustom: |
+      # set max upload size
+      client_max_body_size 10G;
+      client_body_timeout 300s;
+      fastcgi_buffers 64 4K;
+      fastcgi_read_timeout 3600s;
+
     custom:
     # custom: |-
     #     worker_processes  1;..
@@ -409,6 +418,11 @@ externalDatabase:
     # hostKey: db-hostname-or-ip
     # databaseKey: db-name
 
+global:
+  security:
+    # required for bitnamilegacy repos
+    allowInsecureImages: true
+
 ##
 ## MariaDB chart configuration
 ## ref: https://github.com/bitnami/charts/tree/main/bitnami/mariadb
@@ -419,6 +433,9 @@ mariadb:
   # To use an ALREADY DEPLOYED mariadb database, set this to false and configure the externalDatabase parameters
   enabled: true
 
+  image:
+    repository: bitnamilegacy/mariadb
+
   # see: https://github.com/bitnami/charts/tree/main/bitnami/mariadb#global-parameters
   global:
     # overwrites the primary.persistence.storageClass value
@@ -428,6 +445,9 @@ mariadb:
     database: nextcloud
     username: nextcloud
     password: fx7SvCWsds78bnkaw3
+    rootPassword: fx7SvCWsds78bnkaw3
+    replicationPassword: fx7SvCWsds78bnkaw3
+
     # Use existing secret (auth.rootPassword, auth.password, and auth.replicationPassword will be ignored).
     # secret must contain the keys mariadb-root-password, mariadb-replication-password and mariadb-password
     existingSecret: ""
@@ -444,7 +464,7 @@ mariadb:
       existingClaim: "nextcloud-pvc-db"
       storageClass: ""
       accessMode: ReadWriteOnce
-      size: 4Gi
+      size: 8Gi
 
 ##
 ## PostgreSQL chart configuration
@@ -452,6 +472,8 @@ mariadb:
 ##
 postgresql:
   enabled: false
+  image:
+    repository: bitnamilegacy/postgresql
   global:
     postgresql:
       # global.postgresql.auth overrides postgresql.auth
@@ -477,15 +499,38 @@ postgresql:
       # storageClass: ""
 
 ##
+## External Redis configuration
+##
+externalRedis:
+  enabled: false
+
+  ## Redis host
+  host: ""
+
+  ## Redis port
+  port: "6379"
+
+  ## Redis password
+  password: ""
+
+  ## Use a existing secret
+  existingSecret:
+    enabled: false
+    # secretName: nameofsecret
+    passwordKey: redis-password
+
+##
 ## Redis chart configuration
 ## for more options see https://github.com/bitnami/charts/tree/main/bitnami/redis
 ##
 
 redis:
   enabled: true
+  image:
+    repository: bitnamilegacy/redis
   auth:
     enabled: true
-    password: "changeme"
+    password: "admin"
     # name of an existing secret with Redis® credentials (instead of auth.password), must be created ahead of time
     existingSecret: ""
     # Password key to be retrieved from existing secret
@@ -498,7 +543,7 @@ redis:
       enabled: true
   replica:
     persistence:
-      enabled: true
+      enabled: false
 
 ##
 ## Collabora chart configuration
@@ -564,23 +609,86 @@ collabora:
 cronjob:
   enabled: false
 
-  ## Cronjob sidecar resource requests and limits
-  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
-  ##
-  resources: {}
+  # Either 'sidecar' or 'cronjob'
+  type: sidecar
 
-  # Allow configuration of lifecycle hooks
-  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/
-  lifecycle:
-    {}
-    # postStartCommand: []
-    # preStopCommand: []
-  # Set securityContext parameters. For example, you may need to define runAsNonRoot directive
-  securityContext: {}
-  #   runAsUser: 33
-  #   runAsGroup: 33
-  #   runAsNonRoot: true
-  #   readOnlyRootFilesystem: true
+  # Runs crond as a sidecar container in the Nextcloud pod
+  # Note: crond requires root
+  sidecar:
+    ## Cronjob sidecar resource requests and limits
+    ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+    ##
+    resources: {}
+
+    # Allow configuration of lifecycle hooks
+    # ref: https://kubernetes.io/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/
+    lifecycle: {}
+    # lifecycle:
+    #   postStartCommand: []
+    #   preStopCommand: []
+    # Set securityContext parameters. For example, you may need to define runAsNonRoot directive
+    securityContext: {}
+    #   runAsUser: 33
+    #   runAsGroup: 33
+    #   runAsNonRoot: true
+    #   readOnlyRootFilesystem: true
+
+    # The command the cronjob container executes.
+    command:
+      - /cron.sh
+
+  # Uses a Kubernetes CronJob to execute the Nextcloud cron tasks
+  # Note: can run as non-root user. Should run as same user as the Nextcloud pod.
+  cronjob:
+    # Use a CronJob instead of crond sidecar container
+    # crond does not work when not running as root user
+    # Note: requires `persistence.enabled=true`
+    schedule: "*/5 * * * *"
+    successfulJobsHistoryLimit: 3
+    failedJobsHistoryLimit: 5
+    labels: {}
+    annotations: {}
+    backoffLimit: 1
+    affinity: {}
+    # Often RWO volumes are used. But the cronjob pod needs access to the same volume as the nextcloud pod.
+    # Depending on your provider two pods on the same node can still access the same volume.
+    # Following config ensures that the cronjob pod is scheduled on the same node as the nextcloud pod.
+    # affinity:
+    #   podAffinity:
+    #     requiredDuringSchedulingIgnoredDuringExecution:
+    #       - labelSelector:
+    #           matchExpressions:
+    #             - key: app.kubernetes.io/name
+    #               operator: In
+    #               values:
+    #                 - nextcloud
+    #             - key: app.kubernetes.io/component
+    #               operator: In
+    #               values:
+    #                 - app
+    #         topologyKey: kubernetes.io/hostname
+
+    ## Resource requests and limits
+    ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+    ##
+    resources: {}
+    # Allow configuration of lifecycle hooks
+    # ref: https://kubernetes.io/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/
+    # Set securityContext parameters. For example, you may need to define runAsNonRoot directive
+    securityContext: {}
+    #   runAsUser: 33
+    #   runAsGroup: 33
+    #   runAsNonRoot: true
+    #   readOnlyRootFilesystem: true
+
+    # The command to run in the cronjob container
+    # Example to incerase memory limit: php -d memory_limit=2G ...
+    command:
+      - php
+      - -f
+      - /var/www/html/cron.php
+      - --
+      - --verbose
 
 service:
   type: ClusterIP
@@ -589,6 +697,10 @@ service:
   nodePort:
   # -- use additional annotation on service for nextcloud
   annotations: {}
+  # -- Set this to "ClientIP" to make sure that connections from the same client
+  # are passed to the same Nextcloud pod each time.
+  sessionAffinity: ""
+  sessionAffinityConfig: {}
 
 ## Enable persistence using Persistent Volume Claims
 ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
@@ -625,18 +737,17 @@ persistence:
     accessMode: ReadWriteOnce
     size: 8Gi
 
+# We usually recommend not to specify default resources and to leave this as a conscious
+# choice for the user. This also increases chances charts run on environments with little
+# resources, such as Minikube. If you do want to specify resources, uncomment the following
+# lines, adjust them as necessary, and remove the curly braces after 'resources:'.
 resources:
-  {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #  cpu: 100m
-  #  memory: 128Mi
-  # requests:
-  #  cpu: 100m
-  #  memory: 128Mi
+  limits:
+    cpu: 2
+    memory: 4Gi
+  requests:
+    cpu: 100m
+    memory: 128Mi
 
 ## Liveness and readiness probe values
 ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
@@ -656,7 +767,7 @@ readinessProbe:
   failureThreshold: 3
   successThreshold: 1
 startupProbe:
-  enabled: true
+  enabled: false
   initialDelaySeconds: 30
   periodSeconds: 10
   timeoutSeconds: 5
@@ -777,10 +888,11 @@ metrics:
     # Optional: becomes NEXTCLOUD_INFO_APPS env var in the nextcloud-exporter container.
     # Enables gathering of apps-related metrics. Defaults to false
     apps: false
+    update: false
 
   image:
     repository: xperimental/nextcloud-exporter
-    tag: 0.6.2
+    tag: 0.8.0
     pullPolicy: IfNotPresent
     # pullSecrets:
     #   - myRegistrKeySecretName
@@ -861,6 +973,27 @@ metrics:
     ## @param metrics.serviceMonitor.labels Extra labels for the ServiceMonitor
     ##
     labels: {}
+
+  rules:
+    # -- Deploy Prometheus Rules (Alerts) for the exporter
+    # @section -- Metrics
+    enabled: false
+    # -- Label on Prometheus Rules CRD Manifest
+    # @section -- Metrics
+    labels: {}
+    defaults:
+      # -- Add Default Rules
+      # @section -- Metrics
+      enabled: true
+      # -- Label on the rules (the severity is already set)
+      # @section -- Metrics
+      labels: {}
+      # -- Filter on metrics on alerts (default just for this helm-chart)
+      # @section -- Metrics
+      filter: ""
+    # -- Add own Rules to Prometheus Rules
+    # @section -- Metrics
+    additionalRules: []
 
 rbac:
   enabled: false
