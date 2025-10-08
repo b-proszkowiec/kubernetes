@@ -12,7 +12,7 @@ image:
   # -- Container image repository for Jellyfin.
   repository: docker.io/jellyfin/jellyfin
   # -- Jellyfin container image tag. Leave empty to automatically use the Chart's app version.
-  tag: ""
+  tag: "10.10.7"
   # -- Image pull policy (Always, IfNotPresent, or Never).
   pullPolicy: IfNotPresent
 
@@ -43,8 +43,7 @@ podSecurityContext:
   # fsGroup: 2000
 
 # -- Security context for the container.
-securityContext:
-  {}
+securityContext: {}
 # capabilities:
 #   drop:
 #   - ALL
@@ -131,24 +130,24 @@ livenessProbe:
   # periodSeconds: 10
 
 # -- Configure readiness probe for Jellyfin.
-readinessProbe:
-  initialDelaySeconds: 10
-  tcpSocket:
-    port: http
-  # successThreshold: 1
-  # failureThreshold: 3
-  # timeoutSeconds: 1
-  # periodSeconds: 10
+# readinessProbe:
+#   initialDelaySeconds: 10
+#   tcpSocket:
+#     port: http
+#   # successThreshold: 1
+# failureThreshold: 3
+# timeoutSeconds: 1
+# periodSeconds: 10
 
 # -- Additional volumes to mount in the Jellyfin pod.
-volumes:
+extraVolumes:
   - name: nfs
     nfs:
       server: "192.168.0.200"
       path: "/Data/Wideo"
 
 # -- Additional volume mounts for the Jellyfin container.
-volumeMounts:
+extraVolumeMounts:
   - name: nfs
     mountPath: "/data/raid4tb"
 
@@ -169,7 +168,8 @@ jellyfin:
   # -- Additional arguments for the entrypoint command.
   args: []
   # -- Additional environment variables for the container.
-  env: []
+  env:
+    TZ: Europe/Warsaw
 
 persistence:
   config:
