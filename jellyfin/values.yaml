@@ -158,7 +158,16 @@ nodeSelector: {}
 tolerations: []
 
 # -- Affinity rules for pod scheduling.
-affinity: {}
+affinity:
+  nodeAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 5
+        preference:
+          matchExpressions:
+            - key: jellyfin.preferred
+              operator: In
+              values:
+                - "true"
 
 jellyfin:
   # -- Enable DLNA. Requires host network. See: https://jellyfin.org/docs/general/networking/dlna.html
