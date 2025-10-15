@@ -5,3 +5,14 @@ ports:
         to: websecure
         scheme: https
         permanent: true
+
+affinity:
+  nodeAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 5
+        preference:
+          matchExpressions:
+            - key: raspberrypi5.preferred
+              operator: In
+              values:
+                - "true"
