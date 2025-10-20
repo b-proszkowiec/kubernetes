@@ -2,10 +2,10 @@
 
 ## Preconditions
 
-- Create the **jellyfin** namespace:
+- Create the **nextcloud** namespace:
 
 ```
-kubectl create namespace jellyfin
+    kubectl create namespace nextcloud
 ```
 
 - Make sure NFS provisioner is installed:
@@ -14,17 +14,15 @@ kubectl create namespace jellyfin
     kubectl get pods -A | grep nfs
 ```
 
-- If not install by Typing following:
+- If not installed type following:
 
 ```
     kubectl create ns nfs-csi
-    kubectl create ns nextcloud
 ```
 
 ```
     helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
     helm repo update
-    nfs.csi.k8s.io
     helm install nfs-csi nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
         --namespace nfs-csi \
         --set nfs.server=192.168.0.200 \
@@ -51,7 +49,7 @@ kubectl create namespace jellyfin
 
 ## Instalation
 
-- Install the Jellyfin application via Helm:
+- Install the Nextcloud application via Helm:
 
 ```
    helm install nextcloud-nas nextcloud/nextcloud -n nextcloud --values values.yaml
@@ -62,3 +60,16 @@ kubectl create namespace jellyfin
 ```
   helm uninstall nextcloud-nas
 ```
+
+## Ingress route
+
+- Type following to enable traefik ingress:
+
+```
+    kubectl apply -f nextcloud-certificate.yaml
+    kubectl apply -f ingress-route.yaml
+```
+
+## Additional tips
+
+- If application stack while creating **nextcloud-nas-redis-replicas-0** try to restart one of the node.
