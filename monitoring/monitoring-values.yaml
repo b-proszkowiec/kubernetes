@@ -1,0 +1,40 @@
+grafana:
+  enabled: true
+  adminUser: admin
+  adminPassword: StrongGrafanaPassw0rd
+  persistence:
+    enabled: true
+    size: 5Gi
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    hosts:
+      - grafana.local
+
+prometheus:
+  prometheusSpec:
+    retention: "15d"
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+
+kubeStateMetrics:
+  enabled: true
+
+nodeExporter:
+  enabled: true
+
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    storage:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 2Gi
