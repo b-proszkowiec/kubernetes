@@ -1020,15 +1020,16 @@ alertmanager:
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/platform/storage.md
     ##
     storage:
-      {}
-      # volumeClaimTemplate:
-      #   spec:
-      #     storageClassName: "nfs-csi"
-      #     accessModes: ["ReadWriteOnce"]
-      #     resources:
-      #       requests:
-      #         storage: 2Gi
-      #     selector: {}
+      volumeClaimTemplate:
+        metadata:
+          finalizers:
+            - kubernetes.io/pvc-protection
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          storageClassName: "nfs-csi"
+          resources:
+            requests:
+              storage: 2Gi
 
     ## The external URL the Alertmanager instances will be available under. This is necessary to generate correct URLs. This is necessary if Alertmanager is not served from root of a DNS name. string  false
     ##
@@ -4348,16 +4349,17 @@ prometheus:
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/platform/storage.md
     ##
     storageSpec:
-      {}
       # Using PersistentVolumeClaim
-      # volumeClaimTemplate:
-      #   spec:
-      #     selector:
-      #       matchLabels:
-      #         app.kubernetes.io/name: monitoring-prometheus
-      #     resources:
-      #       requests:
-      #         storage: 5Gi
+      volumeClaimTemplate:
+        metadata:
+          finalizers:
+            - kubernetes.io/pvc-protection
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          storageClassName: "nfs-csi"
+          resources:
+            requests:
+              storage: 5Gi
 
     ## Using tmpfs volume
     ##

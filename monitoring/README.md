@@ -15,11 +15,7 @@ helm repo update
 kubectl create namespace monitoring
 ```
 
-- Create PersistentVolumeClaim for prometheus:
-
-```
-kubectl apply -f pvc-prometheus.yaml
-```
+- Make sure **nfs-csi** storage class is already installed
 
 ## Instalation
 
