@@ -164,7 +164,7 @@ affinity:
       - weight: 5
         preference:
           matchExpressions:
-            - key: jellyfin.preferred
+            - key: raspberrypi5.preferred
               operator: In
               values:
                 - "true"
