@@ -20,6 +20,12 @@ kubectl create namespace longhorn-system
 helm install longhorn longhorn/longhorn -n longhorn-system --values values.yaml
 ```
 
+- Enable daily backup:
+
+```
+kubectl apply -f daily-backup.yaml
+```
+
 ## Ingress route
 
 - Check if you already set ingress in the values.yaml. If not run:

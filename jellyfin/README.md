@@ -8,16 +8,13 @@
 kubectl create namespace jellyfin
 ```
 
-- Ensure Longhorn is installed to use its Persistent Volume Claims (PVCs):
+- Ensure Longhorn is installed to use its Persistent Volume Claims (PVCs)
 
 - Create the certificate and IngressRoute:
 
 ```
 kubectl apply -f jellyfin-certificate.yaml -f ingress-route.yaml
 ```
-
-- Make sure longhor is installed in order to use its PVC:
-  helm install longhorn longhorn/longhorn
 
 - Create the Longhorn PersistentVolumeClaim for Jellyfin:
 
@@ -30,7 +27,7 @@ kubectl apply -f longhorn-pvc-config.yaml
 - Install the Jellyfin application via Helm:
 
 ```
-  helm install jellyfin-nas utkuozdemir/jellyfin -n jellyfin --values values.yaml
+helm install jellyfin-nas utkuozdemir/jellyfin -n jellyfin --values values.yaml
 ```
 
 ## Failover / Data Recovery
