@@ -9,4 +9,4 @@ spec:
     name: cloudflare-cluster-issuer
     kind: ClusterIssuer
   dnsNames:
-    - nextcloud.tomcat.org.pl
+    - nextcloud.tomcat.net.pl

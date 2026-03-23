@@ -28,7 +28,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`home-assistant.tomcat.org.pl`)
+    - match: Host(`home-assistant.tomcat.net.pl`)
       kind: Rule
       services:
         - name: local-http

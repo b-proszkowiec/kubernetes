@@ -7,7 +7,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`bf.tomcat.org.pl`)
+    - match: Host(`bf.tomcat.net.pl`)
       kind: Rule
       services:
         - name: jellyfin-nas

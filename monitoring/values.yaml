@@ -609,7 +609,7 @@ alertmanager:
     ## Hosts must be provided if Ingress is enabled.
     ##
     hosts:
-      - cluster.tomcat.org.pl
+      - cluster.tomcat.net.pl
 
     ## Paths to use for ingress rules - one path should match the alertmanagerSpec.routePrefix
     ##
@@ -1333,7 +1333,7 @@ grafana:
     # hosts:
     #   - grafana.domain.com
     hosts:
-      - cluster.tomcat.org.pl
+      - cluster.tomcat.net.pl
 
     ## Path for grafana ingress
     path: /grafana
@@ -1347,7 +1347,7 @@ grafana:
     #   - grafana.example.com
 
   env:
-    GF_SERVER_ROOT_URL: "https://cluster.tomcat.org.pl/grafana/"
+    GF_SERVER_ROOT_URL: "https://cluster.tomcat.net.pl/grafana/"
     GF_SERVER_SERVE_FROM_SUB_PATH: "true"
 
   # # To make Grafana persistent (Using Statefulset)
@@ -3743,7 +3743,7 @@ prometheus:
     # hosts:
     #   - prometheus.domain.com
     hosts:
-      - cluster.tomcat.org.pl
+      - cluster.tomcat.net.pl
 
     ## Paths to use for ingress rules - one path should match the prometheusSpec.routePrefix
     ##
