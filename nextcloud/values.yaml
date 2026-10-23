@@ -76,7 +76,7 @@ phpClientHttpsFix:
 nextcloud:
   host: nextcloud.${DOMAIN}
   username: admin
-  password: ${NEXT_CLOUD_PWD}
+  password: ${NEXTCLOUD_PWD}
   ## Use an existing secret
   existingSecret:
     enabled: false
@@ -443,7 +443,7 @@ mariadb:
   auth:
     database: nextcloud
     username: nextcloud
-    password: ${NEXTCLOUD_PWD} # wymagane dla pod nextcloud
+    password: ${NEXTCLOUD_MDB_PWD} # wymagane dla pod nextcloud
     # Use existing secret (auth.rootPassword, auth.password, and auth.replicationPassword will be ignored).
     # secret must contain the keys mariadb-root-password, mariadb-replication-password and mariadb-password
     existingSecret: "mariadb-secret"
