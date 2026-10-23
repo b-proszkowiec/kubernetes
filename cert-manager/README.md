@@ -1,39 +1,94 @@
-# Cert-manager instalation on k3s
+# Cert-manager installation on k3s
 
-## Preconditions
+## Prerequisites
 
-- Add helm repository if not exist:
+- Install `kubectl`, Helm 3+, and `envsubst`.
+- Create a local `.env` file containing following configuration:
 
+```dotenv
+DOMAIN=your-domain.net.org
+ACME_EMAIL=your-email@example.com
+CF_API_TOKEN=your-api-token
 ```
+
+Load the environment variables before running deployment commands:
+
+```bash
+set -a
+source ../.env
+set +a
+```
+
+## 1. Add the Helm repository
+
+Add the Jetstack repository if it has not already been configured:
+
+```bash
 helm repo add jetstack https://charts.jetstack.io --force-update
+helm repo update
 ```
 
-- Create namespace cert-manager:
+## 2. Create the cert-manager namespace
 
-```
-kubectl create namespace cert-manager
-```
+Create the namespace if it does not already exist:
 
-- Create token as secret:
-
-```
-kubectl apply -f cert-manager-issuer-secret.yaml
+```bash
+kubectl create namespace cert-manager \
+  --dry-run=client -o yaml | kubectl apply -f -
 ```
 
-- Install cert-manager application:
+## 3. Create the Cloudflare API token Secret
 
-```
-helm install cert-manager --namespace cert-manager jetstack/cert-manager --values values.yaml
-```
-
-- Install custom Cluster Issuer:
-
-```
-kubectl apply -f cert-manager-cluster-issuer.yaml
+```bash
+envsubst '${DOMAIN} ${ACME_EMAIL} ${CF_API_TOKEN}' \
+  < cert-manager-issuer-secret.yaml \
+  | kubectl apply -f -
 ```
 
-- If you have already traefik installed in kube-system namespace as k3s do make sure it has proper values:
+## 4. Install or upgrade cert-manager
 
+```bash
+helm upgrade --install cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --values values.yaml
 ```
-helm upgrade traefik traefik/traefik -n kube-system --values traefik-values.yaml
+
+## 5. Apply the ClusterIssuer
+
+```bash
+envsubst '${CF_EMAIL} ${ACME_EMAIL}' \
+  < cert-manager-cluster-issuer.yaml \
+  | kubectl apply -f -
 ```
+
+## 6. Configure Traefik
+
+```bash
+helm upgrade traefik traefik/traefik \
+  --namespace kube-system \
+  --values traefik-values.yaml
+```
+
+## 7. Verify the installation
+
+Check the cert-manager pods:
+
+```bash
+kubectl get pods -n cert-manager
+```
+
+Check the ClusterIssuer status:
+
+```bash
+kubectl get clusterissuer cloudflare-cluster-issuer
+kubectl describe clusterissuer cloudflare-cluster-issuer
+```
+
+Check the certificates:
+
+```bash
+kubectl get certificates -A
+```
+
+A correctly configured ClusterIssuer should eventually report `Ready=True`.
