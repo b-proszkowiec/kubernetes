@@ -74,9 +74,9 @@ phpClientHttpsFix:
   protocol: https
 
 nextcloud:
-  host: nextcloud.tomcat.net.pl
+  host: nextcloud.${DOMAIN}
   username: admin
-  password: fx#7SvC#ds78bn&aw3
+  password: ${NEXT_CLOUD_PWD}
   ## Use an existing secret
   existingSecret:
     enabled: false
@@ -94,7 +94,7 @@ nextcloud:
   persistence:
     subPath:
   # if set, we'll template this list to the NEXTCLOUD_TRUSTED_DOMAINS env var
-  trustedDomains: ["nextcloud.tomcat.net.pl"]
+  trustedDomains: ["nextcloud.${DOMAIN}"]
   ## SMTP configuration
   mail:
     enabled: false
@@ -443,7 +443,7 @@ mariadb:
   auth:
     database: nextcloud
     username: nextcloud
-    password: fx7SvCWsds78bnkaw3 # wymagane dla pod nextcloud
+    password: ${NEXTCLOUD_PWD} # wymagane dla pod nextcloud
     # Use existing secret (auth.rootPassword, auth.password, and auth.replicationPassword will be ignored).
     # secret must contain the keys mariadb-root-password, mariadb-replication-password and mariadb-password
     existingSecret: "mariadb-secret"

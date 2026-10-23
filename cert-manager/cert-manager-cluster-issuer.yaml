@@ -4,14 +4,14 @@ metadata:
   name: cloudflare-cluster-issuer
 spec:
   acme:
-    email: bogpro11@interia.eu
+    email: ${ACME_EMAIL}
     server: https://acme-v02.api.letsencrypt.org/directory
     privateKeySecretRef:
       name: cloudflare-cluster-issuer-account-key
     solvers:
       - dns01:
           cloudflare:
-            email: bogpro11@interia.eu
+            email: ${CF_EMAIL}
             apiTokenSecretRef:
               name: cloudflare-api-token-secret
               key: api-token
