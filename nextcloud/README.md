@@ -113,7 +113,7 @@ helm uninstall nextcloud-nas -n nextcloud
 
 ## Troubleshooting
 
-If the installation gets stuck while creating the `nextcloud-nas-redis-replicas-0` pod, inspect the pod and its events first:
+## 1. If the installation gets stuck while creating the `nextcloud-nas-redis-replicas-0` pod, inspect the pod and its events first:
 
 ```bash
 kubectl describe pod nextcloud-nas-redis-replicas-0 -n nextcloud
@@ -126,3 +126,13 @@ Check the logs if the container has started:
 ```bash
 kubectl logs nextcloud-nas-redis-replicas-0 -n nextcloud
 ```
+
+## 2. Nextcloud deployment pod stuck in CrashLoopBackOff during an image upgrade
+
+During the image upgrade, you may encounter the following Kubernetes event:
+
+```
+  Warning  FailedPostStartHook  23s (x3 over 103s)  kubelet            spec.containers{nextcloud}: PostStartHook failed
+```
+
+Solution: If you have configured a postStartCommand in values.yaml, comment it out temporarily and redeploy Nextcloud. This allows the container to start without the post-start hook interfering with the startup or migration process.
